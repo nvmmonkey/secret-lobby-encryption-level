@@ -1,4 +1,5 @@
 // IMPORT ////
+require("dotenv").config()
 const express = require("express");
 const mongoose = require("mongoose")
 const bodyParser = require("body-parser");
@@ -15,7 +16,6 @@ app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(express.static("public"));
 
-
 // Schema ////
 const userSchema = new mongoose.Schema ({
     email: String,
@@ -23,8 +23,7 @@ const userSchema = new mongoose.Schema ({
 })
 
 /// Mongoose-encryption easy method encrypt
-const secret = "Thisisourlittlesecret."
-userSchema.plugin(encrypt, {secret: secret, encryptedFields: ["password"]})
+userSchema.plugin(encrypt, {secret: process.env.SECRET, encryptedFields: ["password"]})
 const User = new mongoose.model("User", userSchema)
 
 

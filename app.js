@@ -39,7 +39,8 @@ mongoose.connect("mongodb://localhost:27017/userDB", {useNewUrlParser: true}, ()
 const userSchema = new mongoose.Schema ({
     email: String,
     password: String,
-    googleId: String //remember User's Google ID for login again
+    googleId: String, //remember User's Google ID for login again
+    secret: String
 });
 
 userSchema.plugin(passportLocalMongoose);
@@ -97,11 +98,38 @@ app.get("/register", function(req, res){
 })
 
 app.get("/secrets", function(req, res){
+   User.find({"secret": {$ne: null}}, function(err, foundUsers){
+    if(err){
+        console.log(err)
+    }else{
+        if(foundUsers){
+            res.render("secrets", {usersWithSecrets: foundUsers})
+        }
+    }
+   }) 
+})
+
+app.get("/submit", function(req, res){
     if(req.isAuthenticated()){
-        res.render("secrets")
+        res.render("submit")
     }else{
         res.redirect("/login")
     }
+})
+
+app.post("/submit", function(req, res){
+    User.findById(req.user.id, function(err, foundUser){
+        if (err) {
+            console.log(err)
+        } else {
+            if(foundUser){
+                foundUser.secret = req.body.secret
+                foundUser.save(()=>{res.redirect("/secrets")})
+//******* IMPORTANT: This log a user when submit a secret, could be risky to display backend user ID *****/
+                console.log("User" + req.user.id + "submit a secret.") 
+            }
+        }
+    })
 })
 
 app.get('/logout', function(req, res, next) {
